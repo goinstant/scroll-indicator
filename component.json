@@ -1,0 +1,38 @@
+{
+  "name": "scroll-indicator",
+  "repo": "goinstant/components",
+  "description": "GoInstant component for scrolling and window position indicators.",
+  "version": "1.0.0",
+  "keywords": [],
+  "dependencies": {
+    "component/emitter": "*",
+    "lodash/lodash": "*",
+    "stagas/binder": "*",
+    "caolan/async": "*",
+    "yields/data": "*",
+    "goinstant/usercache": "*",
+    "goinstant/colors-common": "*"
+  },
+  "development": {
+    "visionmedia/mocha": "*",
+    "component/jquery": "*"
+  },
+  "main": "index.js",
+  "scripts": [
+    "index.js",
+    "lib/scroll_tracker.js",
+    "lib/resize_tracker.js",
+    "lib/event_indicator.js",
+    "lib/position_indicator.js",
+    "lib/indicator_view.js"
+  ],
+  "templates": [
+    "templates/template.html"
+  ],
+  "styles": [
+    "components.css"
+  ],
+  "images": [
+    "images/icons.png"
+  ]
+}

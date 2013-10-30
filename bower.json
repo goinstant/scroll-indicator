@@ -1,0 +1,31 @@
+{
+  "name": "goinstant-scroll-indicator",
+  "main": [
+    "dist/scroll-indicator.js",
+    "dist/scroll-indicator.css",
+    "dist/scroll-indicator/**/*"
+  ],
+  "version": "1.0.0",
+  "homepage": "https://github.com/goinstant/scroll-indicator",
+  "authors": [
+    "GoInstant",
+    "a salesforce.com company"
+  ],
+
+  "description": "The Scroll Indicator widget shows a notification when remote users that you're collaborating with scroll their browser viewport, and when they're viewing a different part of the page.",
+  "keywords": [
+    "GoInstant",
+    "widget",
+    "scroll-indicator"
+  ],
+
+  "license": "BSD",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
+

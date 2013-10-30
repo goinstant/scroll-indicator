@@ -1,0 +1,63 @@
+.gi-scroll-up,
+.gi-scroll-down-right,
+.gi-scroll-left {
+  position: relative;
+  width: 300px;
+  z-index: 9990;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+.gi-scroll-up {
+  position: fixed;
+  top: 0;
+  right: 0;
+}
+
+.gi-scroll-down-right {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+}
+
+.gi-scroll-left {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+
+.gi-scroll-icon {
+  background-image: url('images/icons.png');
+  background-repeat: no-repeat;
+  float: left;
+  height: 37px;
+  margin-right: 5px;
+  width: 40px;
+}
+
+.gi-scroll-left .gi-scroll-icon {
+  background-position: 0 -37px;
+}
+
+.gi-scroll-right .gi-scroll-icon {
+  background-position: -40px -37px;
+}
+
+.gi-scroll-down .gi-scroll-icon {
+  background-position: -40px 0;
+}
+
+.gi-scroll {
+  padding: 2px;
+  font-size: 13px;  
+  font-family: sans-serif;
+}
+
+.gi-scroll-msg {
+  line-height: 37px;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  width: 251px;
+  white-space: nowrap;
+}
