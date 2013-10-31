@@ -7,7 +7,7 @@ var async = require('async');
 var _ = require('lodash');
 
 var UserCache = require('usercache');
-var colors = require('colors-common');
+var colors = require('colors');
 
 var ScrollTracker = require('./lib/scroll_tracker');
 var ResizeTracker = require('./lib/resize_tracker');
@@ -30,7 +30,8 @@ var SUPPORTED_OPTIONS = [
   'displayTimer',
   'eventUI',
   'positionUI',
-  'threshold'
+  'threshold',
+  'namespace'
 ];
 
 /**
@@ -41,7 +42,8 @@ var DEFAULT_OPTIONS = {
   displayTimer: 1000,
   eventUI: true,
   positionUI: true,
-  threshold: 0.75
+  threshold: 0.75,
+  namespace: '/goinstant/components/scroll-indicator'
 };
 
 /**
@@ -222,6 +224,10 @@ ScrollIndicator.prototype._validateOptions = function(opts) {
 
   if (!_.isNumber(opts.displayTimer)) {
     throw new Error('Invalid displayTimer option');
+  }
+
+  if (!_.isString(opts.namespace)) {
+    throw new Error('Invalid namespace option');
   }
 
   return opts;
