@@ -55,6 +55,12 @@ describe('ScrollIndicator', function() {
       }, /Invalid displayTimer option/);
     });
 
+    it('throws if a non-string namespace is passed', function() {
+      assert.exception(function() {
+        new ScrollIndicator({ room: mockRoom, namespace: true });
+      }, /Invalid namespace option/);
+    });
+
     it('throws if unexpected options are passed', function() {
       assert.exception(function() {
         new ScrollIndicator({ room: mockRoom, foo: 'bar' });

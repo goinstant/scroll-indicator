@@ -48,7 +48,12 @@ describe('PositionIndicator', function() {
 
     mockComponent = {
       _id: 'elemId',
-      _options: { room: mockRoom, positionUI: true, threshold: 0.75 },
+      _options: {
+        room: mockRoom,
+        positionUI: true,
+        threshold: 0.75,
+        namespace: 'test-namespace'
+      },
       _scrollTracker: mockScrollTracker,
       _resizeTracker: new Emitter(),
       _userCache: new Emitter(),
@@ -83,6 +88,13 @@ describe('PositionIndicator', function() {
     positionIndicator.initialize(done);
 
     keyName = positionIndicator._keyName();
+  });
+
+  it('sets the namespace correctly', function() {
+    assert.equal(
+      positionIndicator._keyName(),
+      mockComponent._options.namespace + '/' + mockComponent._id
+    );
   });
 
   it('sets the key when scrolling', function() {
