@@ -43,7 +43,7 @@ var DEFAULT_OPTIONS = {
   eventUI: true,
   positionUI: true,
   threshold: 0.75,
-  namespace: '/goinstant/components/scroll-indicator'
+  namespace: '/goinstant/widgets/scroll-indicator'
 };
 
 /**
