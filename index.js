@@ -7,7 +7,7 @@ var async = require('async');
 var _ = require('lodash');
 
 var UserCache = require('usercache');
-var colors = require('colors');
+var colors = require('colors-common');
 
 var ScrollTracker = require('./lib/scroll_tracker');
 var ResizeTracker = require('./lib/resize_tracker');
