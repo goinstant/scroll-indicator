@@ -21,6 +21,8 @@ var IndicatorView = require('./lib/indicator_view');
  * interface to the ScrollIndicator Component's various settings.
  */
 
+ var NAMESPACE = 'goinstant/widgets/scroll-indicator/'
+
 /**
  * A list of the supported options.
  * @const
@@ -43,7 +45,7 @@ var DEFAULT_OPTIONS = {
   eventUI: true,
   positionUI: true,
   threshold: 0.75,
-  namespace: '/goinstant/widgets/scroll-indicator'
+  namespace: ''
 };
 
 /**
@@ -69,6 +71,8 @@ var DISPLAYNAME_REGEX = /\/displayName$/;
   */
 function ScrollIndicator(opts) {
   this._options = this._validateOptions(opts);
+
+  this._options.namespace = NAMESPACE + this._options.namespace;
 
   // Choose an identifier for this element.
   // TODO: Need a more robust solution here
