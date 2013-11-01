@@ -52,7 +52,7 @@ describe('PositionIndicator', function() {
         room: mockRoom,
         positionUI: true,
         threshold: 0.75,
-        namespace: 'test-namespace'
+        keyNamespace: 'test-namespace'
       },
       _scrollTracker: mockScrollTracker,
       _resizeTracker: new Emitter(),
@@ -93,7 +93,7 @@ describe('PositionIndicator', function() {
   it('sets the namespace correctly', function() {
     assert.equal(
       positionIndicator._keyName(),
-      mockComponent._options.namespace + '/' + mockComponent._id
+      mockComponent._options.keyNamespace + '/' + mockComponent._id
     );
   });
 

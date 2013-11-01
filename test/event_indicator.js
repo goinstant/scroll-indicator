@@ -45,7 +45,7 @@ describe('EventIndicator', function() {
 
     var fakeOptions = {
       eventUI: true,
-      namespace: 'test-namespace'
+      channelNamespace: 'test-namespace'
     };
 
     fakeScrollIndicator = {
@@ -103,7 +103,7 @@ describe('EventIndicator', function() {
 
     it ('Initializes with the correct channel name', function(done) {
       var fakeNamespace =
-        fakeScrollIndicator._options.namespace +
+        fakeScrollIndicator._options.channelNamespace +
         '-' +
         fakeScrollIndicator._id;
       eventIndicator.initialize(function(err) {
