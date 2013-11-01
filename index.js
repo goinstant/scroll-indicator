@@ -21,7 +21,8 @@ var IndicatorView = require('./lib/indicator_view');
  * interface to the ScrollIndicator Component's various settings.
  */
 
- var NAMESPACE = 'goinstant/widgets/scroll-indicator/'
+ var KEY_NAMESPACE = 'goinstant/widgets/scroll-indicator/';
+ var CHANNEL_NAMESPACE = 'goinstant-widgets-scroll-indicator-';
 
 /**
  * A list of the supported options.
@@ -72,7 +73,9 @@ var DISPLAYNAME_REGEX = /\/displayName$/;
 function ScrollIndicator(opts) {
   this._options = this._validateOptions(opts);
 
-  this._options.namespace = NAMESPACE + this._options.namespace;
+  this._options.keyNamespace = KEY_NAMESPACE + this._options.namespace;
+  this._options.channelNamespace = CHANNEL_NAMESPACE + this._options.namespace;
+  delete this._options.namespace;
 
   // Choose an identifier for this element.
   // TODO: Need a more robust solution here
