@@ -45,6 +45,7 @@ describe('EventIndicator', function() {
 
     var fakeOptions = {
       eventUI: true,
+      channelNamespace: 'test-namespace'
     };
 
     fakeScrollIndicator = {
@@ -66,9 +67,9 @@ describe('EventIndicator', function() {
     fakeChannel.on = sinon.stub().callsArg(2);
     fakeChannel.off = sinon.stub().callsArg(2);
 
-    fakeRoom.channel = function() {
+    fakeRoom.channel = sinon.spy(function() {
       return fakeChannel;
-    };
+    });
 
     var fakeUser = {
       id: '1'
@@ -98,6 +99,18 @@ describe('EventIndicator', function() {
 
     it ('Initializes without errors', function(done) {
       eventIndicator.initialize(done);
+    });
+
+    it ('Initializes with the correct channel name', function(done) {
+      var fakeNamespace =
+        fakeScrollIndicator._options.channelNamespace +
+        '-' +
+        fakeScrollIndicator._id;
+      eventIndicator.initialize(function(err) {
+        assert.ifError(err);
+        sinon.assert.calledWith(eventIndicator._room.channel, fakeNamespace);
+        done();
+      });
     });
 
     it ('errors when registering listener to channel', function(done) {
