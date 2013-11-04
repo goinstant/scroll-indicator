@@ -901,7 +901,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
     var setImmediate = typeof (setImmediate = freeGlobal && moduleExports && freeGlobal.setImmediate) == 'function' &&
       !reNative.test(setImmediate) && setImmediate;
 
-    /** Used to set meta data */
+    /** Used to set meta data on functions */
     var defineProperty = (function() {
       // IE 8 only accepts DOM elements
       try {
@@ -1726,8 +1726,11 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
       var isArr = className == arrayClass;
       if (!isArr) {
         // unwrap any `lodash` wrapped values
-        if (hasOwnProperty.call(a, '__wrapped__ ') || hasOwnProperty.call(b, '__wrapped__')) {
-          return baseIsEqual(a.__wrapped__ || a, b.__wrapped__ || b, callback, isWhere, stackA, stackB);
+        var aWrapped = hasOwnProperty.call(a, '__wrapped__'),
+            bWrapped = hasOwnProperty.call(b, '__wrapped__');
+
+        if (aWrapped || bWrapped) {
+          return baseIsEqual(aWrapped ? a.__wrapped__ : a, bWrapped ? b.__wrapped__ : b, callback, isWhere, stackA, stackB);
         }
         // exit for functions and DOM nodes
         if (className != objectClass || (!support.nodeClass && (isNode(a) || isNode(b)))) {
@@ -2216,7 +2219,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
     if (!support.argsClass) {
       isArguments = function(value) {
         return value && typeof value == 'object' && typeof value.length == 'number' &&
-          hasOwnProperty.call(value, 'callee') && propertyIsEnumerable.call(value, 'callee') || false;
+          hasOwnProperty.call(value, 'callee') && !propertyIsEnumerable.call(value, 'callee') || false;
       };
     }
 
@@ -6628,7 +6631,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * debugging. See http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/#toc-sourceurl
      *
      * For more information on precompiling templates see:
-     * http://lodash.com/#custom-builds
+     * http://lodash.com/custom-builds
      *
      * For more information on Chrome extension sandboxes see:
      * http://developer.chrome.com/stable/extensions/sandboxingEval.html
@@ -7341,7 +7344,6 @@ exports.unbind = function(el, type, fn, capture){
 
 });
 require.register("component-query/index.js", function(exports, require, module){
-
 function one(selector, el) {
   return el.querySelector(selector);
 }
@@ -7361,6 +7363,7 @@ exports.engine = function(obj){
   if (!obj.all) throw new Error('.all callback required');
   one = obj.one;
   exports.all = obj.all;
+  return exports;
 };
 
 });
@@ -9151,6 +9154,9 @@ var IndicatorView = require('./lib/indicator_view');
  * interface to the ScrollIndicator Component's various settings.
  */
 
+ var KEY_NAMESPACE = 'goinstant/widgets/scroll-indicator/';
+ var CHANNEL_NAMESPACE = 'goinstant-widgets-scroll-indicator-';
+
 /**
  * A list of the supported options.
  * @const
@@ -9160,7 +9166,8 @@ var SUPPORTED_OPTIONS = [
   'displayTimer',
   'eventUI',
   'positionUI',
-  'threshold'
+  'threshold',
+  'namespace'
 ];
 
 /**
@@ -9171,7 +9178,8 @@ var DEFAULT_OPTIONS = {
   displayTimer: 1000,
   eventUI: true,
   positionUI: true,
-  threshold: 0.75
+  threshold: 0.75,
+  namespace: ''
 };
 
 /**
@@ -9197,6 +9205,10 @@ var DISPLAYNAME_REGEX = /\/displayName$/;
   */
 function ScrollIndicator(opts) {
   this._options = this._validateOptions(opts);
+
+  this._options.keyNamespace = KEY_NAMESPACE + this._options.namespace;
+  this._options.channelNamespace = CHANNEL_NAMESPACE + this._options.namespace;
+  delete this._options.namespace;
 
   // Choose an identifier for this element.
   // TODO: Need a more robust solution here
@@ -9352,6 +9364,10 @@ ScrollIndicator.prototype._validateOptions = function(opts) {
 
   if (!_.isNumber(opts.displayTimer)) {
     throw new Error('Invalid displayTimer option');
+  }
+
+  if (!_.isString(opts.namespace)) {
+    throw new Error('Invalid namespace option');
   }
 
   return opts;
@@ -9666,8 +9682,6 @@ require.register("scroll-indicator/lib/event_indicator.js", function(exports, re
 
 var _ = require('lodash');
 
-var CHANNEL_NAMESPACE ='goinstant-components-scroll-indicator-';
-
 /**
  * Instantiates the EventIndicator instance.
  * @constructor
@@ -9682,6 +9696,8 @@ function EventIndicator(component) {
   this._id = component._id;
   this._showUI = component._options.eventUI;
   this._room = component._options.room;
+
+  this._namespace = component._options.channelNamespace;
 
   this._localUser = null;
   this._channel = null;
@@ -9698,7 +9714,7 @@ function EventIndicator(component) {
 EventIndicator.prototype.initialize = function(cb) {
   var self = this;
 
-  var channelName = CHANNEL_NAMESPACE + this._id;
+  var channelName = this._namespace + '-' + this._id;
   this._channel = this._room.channel(channelName);
 
   this._scrollTracker.on('scroll', self._scrollHandler);
@@ -9811,8 +9827,6 @@ require.register("scroll-indicator/lib/position_indicator.js", function(exports,
 
 var _ = require('lodash');
 
-var KEY_NAMESPACE = '/goinstant/components/scroll-indicator';
-
 /**
  * @constructor
  */
@@ -9837,6 +9851,8 @@ function PositionIndicator(component) {
   // Percentage of the remote screen that has to be "off" our screen to count
   // as looking at a different "place"
   this._threshold = component._options.threshold;
+
+  this._namespace = component._options.keyNamespace;
 
   // The key and object for the local platform user.
   this._userKey = null;
@@ -10082,7 +10098,7 @@ PositionIndicator.prototype._determineDirections = function(remoteData) {
  * @return {string} The sub-key name.
  */
 PositionIndicator.prototype._keyName = function() {
- return KEY_NAMESPACE + '/' + this._component._id;
+ return this._namespace + '/' + this._component._id;
 };
 
 /**
@@ -10095,7 +10111,6 @@ PositionIndicator.prototype._callback = function(err) {
 };
 
 module.exports = PositionIndicator;
-
 
 });
 require.register("scroll-indicator/lib/indicator_view.js", function(exports, require, module){
