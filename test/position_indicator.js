@@ -16,6 +16,8 @@ describe('PositionIndicator', function() {
     require('scroll-indicator/lib/position_indicator.js');
   var Emitter = require('emitter');
 
+  var KEY_NAMESPACE = 'goinstant/widgets/scroll-indicator';
+
   var mockUser;
   var mockKey;
   var mockRoom;
@@ -51,8 +53,7 @@ describe('PositionIndicator', function() {
       _options: {
         room: mockRoom,
         positionUI: true,
-        threshold: 0.75,
-        keyNamespace: 'test-namespace'
+        threshold: 0.75
       },
       _scrollTracker: mockScrollTracker,
       _resizeTracker: new Emitter(),
@@ -90,10 +91,27 @@ describe('PositionIndicator', function() {
     keyName = positionIndicator._keyName();
   });
 
-  it('sets the namespace correctly', function() {
+  it('sets the namespace correctly when provided', function() {
+    mockComponent._options.namespace = 'test-namespace';
+
+    positionIndicator = new PositionIndicator(mockComponent);
+
+    var namespace = mockComponent._options.namespace;
+
     assert.equal(
       positionIndicator._keyName(),
-      mockComponent._options.keyNamespace + '/' + mockComponent._id
+      KEY_NAMESPACE + '/' + namespace + '/' + mockComponent._id
+    );
+  });
+
+  it('sets the namespace correctly when not provided', function() {
+    delete mockComponent._options.namespace;
+
+    positionIndicator = new PositionIndicator(mockComponent);
+
+    assert.equal(
+      positionIndicator._keyName(),
+      KEY_NAMESPACE + '/' + mockComponent._id
     );
   });
 

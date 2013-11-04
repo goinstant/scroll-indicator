@@ -22,6 +22,8 @@ describe('EventIndicator', function() {
   var fakeRoom = {};
   var fakeScrollTracker = null;
 
+  var CHANNEL_NAMESPACE = 'goinstant-widgets-scroll-indicator';
+
   beforeEach(function() {
 
     var userCache = {
@@ -44,8 +46,7 @@ describe('EventIndicator', function() {
     };
 
     var fakeOptions = {
-      eventUI: true,
-      channelNamespace: 'test-namespace'
+      eventUI: true
     };
 
     fakeScrollIndicator = {
@@ -89,23 +90,36 @@ describe('EventIndicator', function() {
 
   describe ('Initialize', function() {
 
-    beforeEach(function() {
-      eventIndicator = new EventIndicator(fakeScrollIndicator);
-    });
-
     afterEach(function(done) {
       eventIndicator.destroy(done);
     });
 
     it ('Initializes without errors', function(done) {
+      eventIndicator = new EventIndicator(fakeScrollIndicator);
       eventIndicator.initialize(done);
     });
 
-    it ('Initializes with the correct channel name', function(done) {
-      var fakeNamespace =
-        fakeScrollIndicator._options.channelNamespace +
-        '-' +
-        fakeScrollIndicator._id;
+    it ('Initializes when namespace is specified', function(done) {
+      fakeScrollIndicator._options.namespace = 'test-namespace';
+
+      eventIndicator = new EventIndicator(fakeScrollIndicator);
+
+      var namespace = fakeScrollIndicator._options.namespace;
+      var id = fakeScrollIndicator._id;
+      var fakeNamespace = CHANNEL_NAMESPACE + '-' + namespace + '-' + id;
+
+      eventIndicator.initialize(function(err) {
+        assert.ifError(err);
+        sinon.assert.calledWith(eventIndicator._room.channel, fakeNamespace);
+        done();
+      });
+    });
+
+    it ('Initializes when namespace is not specified', function(done) {
+      eventIndicator = new EventIndicator(fakeScrollIndicator);
+
+      var fakeNamespace = CHANNEL_NAMESPACE + '-' + fakeScrollIndicator._id;
+
       eventIndicator.initialize(function(err) {
         assert.ifError(err);
         sinon.assert.calledWith(eventIndicator._room.channel, fakeNamespace);
