@@ -19,34 +19,35 @@ describe('PositionIndicator', function() {
   var KEY_NAMESPACE = 'goinstant/widgets/scroll-indicator';
 
   var mockUser;
-  var mockKey;
+  var namespaceKey;
   var mockRoom;
   var mockComponent;
   var positionIndicator;
   var remoteUser;
   var size;
   var keyName;
+  var userKey;
 
   beforeEach(function(done) {
     mockUser = {
       id: 'id1'
     };
 
-    mockKey = {
+    namespaceKey = {
       set: sinon.spy(),
       remove: sinon.stub().yields(),
-      key: function(keyName) {
-        mockKey.name = this.name + '/' + keyName;
-        return mockKey;
-      },
+      key: sinon.spy(function(keyName) {
+        namespaceKey.name = this.name + '/' + keyName;
+        return namespaceKey;
+      }),
       name: ''
     };
 
-    var userKey = {
-      key: function(keyName) {
-        mockKey.name = keyName;
-        return mockKey;
-      }
+    userKey = {
+      key: sinon.spy(function(keyName) {
+        namespaceKey.name = keyName;
+        return namespaceKey;
+      })
     };
 
     mockRoom = {
@@ -107,10 +108,9 @@ describe('PositionIndicator', function() {
 
     var namespace = mockComponent._options.namespace;
 
-    assert.equal(
-      positionIndicator._keyName(),
-      KEY_NAMESPACE + '/' + namespace + '/' + mockComponent._id
-    );
+    sinon.assert.calledWith(userKey.key, 'goinstant/widgets/scroll-indicator');
+    sinon.assert.calledWith(namespaceKey.key, 'test-namespace');
+    sinon.assert.calledWith(namespaceKey.key, mockComponent._id);
   });
 
   it('sets the namespace correctly when not provided', function() {
@@ -118,10 +118,8 @@ describe('PositionIndicator', function() {
 
     positionIndicator = new PositionIndicator(mockComponent);
 
-    assert.equal(
-      positionIndicator._keyName(),
-      KEY_NAMESPACE + '/' + mockComponent._id
-    );
+    sinon.assert.calledWith(userKey.key, 'goinstant/widgets/scroll-indicator');
+    sinon.assert.calledWith(namespaceKey.key, mockComponent._id);
   });
 
   it('sets the key when scrolling', function() {
@@ -133,7 +131,7 @@ describe('PositionIndicator', function() {
       size: { width: 100, height: 100 }
     };
 
-    sinon.assert.calledWith(mockKey.set, expected);
+    sinon.assert.calledWith(namespaceKey.set, expected);
   });
 
   it('sets the key when resizing', function() {
@@ -145,7 +143,7 @@ describe('PositionIndicator', function() {
       size: { width: 200, height: 100 }
     };
 
-    sinon.assert.calledWith(mockKey.set, expected);
+    sinon.assert.calledWith(namespaceKey.set, expected);
   });
 
   it('adds an indicator for remote user below', function() {
@@ -230,7 +228,7 @@ describe('PositionIndicator', function() {
       };
       mockComponent._userCache.emit('change', remoteUser, keyName);
 
-      sinon.assert.calledOnce(mockKey.set);
+      sinon.assert.calledOnce(namespaceKey.set);
       sinon.assert.notCalled(mockComponent._view.addPositionIndicator);
 
       done();
