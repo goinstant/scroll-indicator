@@ -227,12 +227,12 @@ ScrollIndicator.prototype._validateOptions = function(opts) {
   }
 
   if (!_.isString(opts.namespace)) {
-    throw new Error('Invalid namespace option');
+    throw new Error('Invalid namespace option: String required');
   } else if (opts.namespace !== '') {
     try {
       opts.room.key(opts.namespace);
     } catch (namespaceErr) {
-      throw new Error('Invalid namespace option');
+      throw new Error('Invalid namespace option: Must be valid key syntax');
     }
   }
 

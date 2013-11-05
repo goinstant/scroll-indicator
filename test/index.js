@@ -61,13 +61,13 @@ describe('ScrollIndicator', function() {
     it('throws if a non-string namespace is passed', function() {
       assert.exception(function() {
         new ScrollIndicator({ room: mockRoom, namespace: true });
-      }, /Invalid namespace option/);
+      }, /Invalid namespace option: String required/);
     });
 
     it('throws if an invalid namespace string is passed', function() {
       assert.exception(function() {
         new ScrollIndicator({ room: mockRoom, namespace: '//$$//BADNAME' });
-      }, /Invalid namespace option/);
+      }, /Invalid namespace option: Must be valid key syntax/);
     });
 
     it('throws if unexpected options are passed', function() {
