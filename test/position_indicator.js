@@ -34,15 +34,24 @@ describe('PositionIndicator', function() {
 
     mockKey = {
       set: sinon.spy(),
-      remove: sinon.stub().yields()
+      remove: sinon.stub().yields(),
+      key: function(keyName) {
+        mockKey.name = this.name + '/' + keyName;
+        return mockKey;
+      },
+      name: ''
     };
 
     var userKey = {
-      key: function() { return mockKey; }
+      key: function(keyName) {
+        mockKey.name = keyName;
+        return mockKey;
+      }
     };
 
     mockRoom = {
-      user: sinon.stub().yields(null, mockUser, userKey)
+      user: sinon.stub().yields(null, mockUser, userKey),
+      self: sinon.stub().returns(userKey)
     };
 
     var mockScrollTracker = new Emitter();
