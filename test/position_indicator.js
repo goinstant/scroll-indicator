@@ -16,31 +16,43 @@ describe('PositionIndicator', function() {
     require('scroll-indicator/lib/position_indicator.js');
   var Emitter = require('emitter');
 
+  var KEY_NAMESPACE = 'goinstant/widgets/scroll-indicator';
+
   var mockUser;
-  var mockKey;
+  var namespaceKey;
   var mockRoom;
   var mockComponent;
   var positionIndicator;
   var remoteUser;
   var size;
   var keyName;
+  var userKey;
 
   beforeEach(function(done) {
     mockUser = {
       id: 'id1'
     };
 
-    mockKey = {
+    namespaceKey = {
       set: sinon.spy(),
-      remove: sinon.stub().yields()
+      remove: sinon.stub().yields(),
+      key: sinon.spy(function(keyName) {
+        namespaceKey.name = this.name + '/' + keyName;
+        return namespaceKey;
+      }),
+      name: ''
     };
 
-    var userKey = {
-      key: function() { return mockKey; }
+    userKey = {
+      key: sinon.spy(function(keyName) {
+        namespaceKey.name = keyName;
+        return namespaceKey;
+      })
     };
 
     mockRoom = {
-      user: sinon.stub().yields(null, mockUser, userKey)
+      user: sinon.stub().yields(null, mockUser, userKey),
+      self: sinon.stub().returns(userKey)
     };
 
     var mockScrollTracker = new Emitter();
@@ -51,8 +63,7 @@ describe('PositionIndicator', function() {
       _options: {
         room: mockRoom,
         positionUI: true,
-        threshold: 0.75,
-        keyNamespace: 'test-namespace'
+        threshold: 0.75
       },
       _scrollTracker: mockScrollTracker,
       _resizeTracker: new Emitter(),
@@ -90,11 +101,25 @@ describe('PositionIndicator', function() {
     keyName = positionIndicator._keyName();
   });
 
-  it('sets the namespace correctly', function() {
-    assert.equal(
-      positionIndicator._keyName(),
-      mockComponent._options.keyNamespace + '/' + mockComponent._id
-    );
+  it('sets the namespace correctly when provided', function() {
+    mockComponent._options.namespace = 'test-namespace';
+
+    positionIndicator = new PositionIndicator(mockComponent);
+
+    var namespace = mockComponent._options.namespace;
+
+    sinon.assert.calledWith(userKey.key, 'goinstant/widgets/scroll-indicator');
+    sinon.assert.calledWith(namespaceKey.key, 'test-namespace');
+    sinon.assert.calledWith(namespaceKey.key, mockComponent._id);
+  });
+
+  it('sets the namespace correctly when not provided', function() {
+    delete mockComponent._options.namespace;
+
+    positionIndicator = new PositionIndicator(mockComponent);
+
+    sinon.assert.calledWith(userKey.key, 'goinstant/widgets/scroll-indicator');
+    sinon.assert.calledWith(namespaceKey.key, mockComponent._id);
   });
 
   it('sets the key when scrolling', function() {
@@ -106,7 +131,7 @@ describe('PositionIndicator', function() {
       size: { width: 100, height: 100 }
     };
 
-    sinon.assert.calledWith(mockKey.set, expected);
+    sinon.assert.calledWith(namespaceKey.set, expected);
   });
 
   it('sets the key when resizing', function() {
@@ -118,7 +143,7 @@ describe('PositionIndicator', function() {
       size: { width: 200, height: 100 }
     };
 
-    sinon.assert.calledWith(mockKey.set, expected);
+    sinon.assert.calledWith(namespaceKey.set, expected);
   });
 
   it('adds an indicator for remote user below', function() {
@@ -203,7 +228,7 @@ describe('PositionIndicator', function() {
       };
       mockComponent._userCache.emit('change', remoteUser, keyName);
 
-      sinon.assert.calledOnce(mockKey.set);
+      sinon.assert.calledOnce(namespaceKey.set);
       sinon.assert.notCalled(mockComponent._view.addPositionIndicator);
 
       done();
