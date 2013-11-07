@@ -1,5 +1,9 @@
 # Scroll Indicator Changelog
 
+### v1.1.1
+
+- Namespacing bug fix.
+
 ### v1.1.0
 
 - Added namespace paramater to constructor.

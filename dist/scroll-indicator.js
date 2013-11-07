@@ -944,10 +944,10 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
     (function() {
       var length = shadowedProps.length;
       while (length--) {
-        var prop = shadowedProps[length];
+        var key = shadowedProps[length];
         for (var className in nonEnumProps) {
-          if (hasOwnProperty.call(nonEnumProps, className) && !hasOwnProperty.call(nonEnumProps[className], prop)) {
-            nonEnumProps[className][prop] = false;
+          if (hasOwnProperty.call(nonEnumProps, className) && !hasOwnProperty.call(nonEnumProps[className], key)) {
+            nonEnumProps[className][key] = false;
           }
         }
       }
@@ -1057,8 +1057,8 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
           props = [];
 
       ctor.prototype = { 'valueOf': 1, 'y': 1 };
-      for (var prop in new ctor) { props.push(prop); }
-      for (prop in arguments) { }
+      for (var key in new ctor) { props.push(key); }
+      for (key in arguments) { }
 
       /**
        * Detect if an `arguments` object's [[Class]] is resolvable (all but Firefox < 4, IE < 9).
@@ -1122,7 +1122,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
        * @memberOf _.support
        * @type boolean
        */
-      support.nonEnumArgs = prop != 0;
+      support.nonEnumArgs = key != 0;
 
       /**
        * Detect if properties shadowing those on `Object.prototype` are non-enumerable.
@@ -3349,23 +3349,29 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * // => { 'name': 'fred' }
      */
     function omit(object, callback, thisArg) {
-      var indexOf = getIndexOf(),
-          isFunc = typeof callback == 'function',
-          result = {};
+      var result = {};
+      if (typeof callback != 'function') {
+        var props = [];
+        forIn(object, function(value, key) {
+          props.push(key);
+        });
+        props = difference(props, baseFlatten(arguments, true, false, 1));
 
-      if (isFunc) {
-        callback = lodash.createCallback(callback, thisArg, 3);
-      } else {
-        var props = baseFlatten(arguments, true, false, 1);
-      }
-      forIn(object, function(value, key, object) {
-        if (isFunc
-              ? !callback(value, key, object)
-              : indexOf(props, key) < 0
-            ) {
-          result[key] = value;
+        var index = -1,
+            length = props.length;
+
+        while (++index < length) {
+          var key = props[index];
+          result[key] = object[key];
         }
-      });
+      } else {
+        callback = lodash.createCallback(callback, thisArg, 3);
+        forIn(object, function(value, key, object) {
+          if (!callback(value, key, object)) {
+            result[key] = value;
+          }
+        });
+      }
       return result;
     }
 
@@ -3491,7 +3497,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
         }
       }
       if (callback) {
-        callback = baseCreateCallback(callback, thisArg, 4);
+        callback = lodash.createCallback(callback, thisArg, 4);
         (isArr ? baseEach : forOwn)(object, function(value, index, object) {
           return callback(accumulator, value, index, object);
         });
@@ -4338,7 +4344,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      */
     function reduce(collection, callback, accumulator, thisArg) {
       var noaccum = arguments.length < 3;
-      callback = baseCreateCallback(callback, thisArg, 4);
+      callback = lodash.createCallback(callback, thisArg, 4);
 
       if (isArray(collection)) {
         var index = -1,
@@ -4381,7 +4387,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      */
     function reduceRight(collection, callback, accumulator, thisArg) {
       var noaccum = arguments.length < 3;
-      callback = baseCreateCallback(callback, thisArg, 4);
+      callback = lodash.createCallback(callback, thisArg, 4);
       forEachRight(collection, function(value, index, collection) {
         accumulator = noaccum
           ? (noaccum = false, value)
@@ -6057,6 +6063,9 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
           if (isCalled) {
             lastCalled = now();
             result = func.apply(thisArg, args);
+            if (!timeoutId && !maxTimeoutId) {
+              args = thisArg = null;
+            }
           }
         } else {
           timeoutId = setTimeout(delayed, remaining);
@@ -6071,6 +6080,9 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
         if (trailing || (maxWait !== wait)) {
           lastCalled = now();
           result = func.apply(thisArg, args);
+          if (!timeoutId && !maxTimeoutId) {
+            args = thisArg = null;
+          }
         }
       };
 
@@ -6086,8 +6098,10 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
           if (!maxTimeoutId && !leading) {
             lastCalled = stamp;
           }
-          var remaining = maxWait - (stamp - lastCalled);
-          if (remaining <= 0) {
+          var remaining = maxWait - (stamp - lastCalled),
+              isCalled = remaining <= 0;
+
+          if (isCalled) {
             if (maxTimeoutId) {
               maxTimeoutId = clearTimeout(maxTimeoutId);
             }
@@ -6098,11 +6112,18 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
             maxTimeoutId = setTimeout(maxDelayed, remaining);
           }
         }
-        if (!timeoutId && wait !== maxWait) {
+        if (isCalled && timeoutId) {
+          timeoutId = clearTimeout(timeoutId);
+        }
+        else if (!timeoutId && wait !== maxWait) {
           timeoutId = setTimeout(delayed, wait);
         }
         if (leadingCall) {
+          isCalled = true;
           result = func.apply(thisArg, args);
+        }
+        if (isCalled && !timeoutId && !maxTimeoutId) {
+          args = thisArg = null;
         }
         return result;
       };
@@ -8748,7 +8769,7 @@ var _ = require('lodash');
 var async = require('async');
 var Emitter = require('emitter');
 
-var VALID_EVENTS = ["join", "leave", "change"];
+var VALID_EVENTS = ['join', 'leave', 'change'];
 
 /**
  * Instantiates the UserCache instance.
@@ -9013,6 +9034,8 @@ UserCache.prototype._updateUser = function(value, context) {
  */
 UserCache.prototype._handleJoinEvent = function(user) {
   this._users[user.id] = user;
+  this._usersKeys[user.id] = this._room.key('/.users/' + user.id);
+
   this._emitter.emit('join', user);
 };
 
@@ -9023,6 +9046,8 @@ UserCache.prototype._handleJoinEvent = function(user) {
  */
 UserCache.prototype._handleLeaveEvent = function(user) {
   delete this._users[user.id];
+  delete this._usersKeys[user.id];
+
   this._emitter.emit('leave', user);
 };
 
@@ -9154,9 +9179,6 @@ var IndicatorView = require('./lib/indicator_view');
  * interface to the ScrollIndicator Component's various settings.
  */
 
- var KEY_NAMESPACE = 'goinstant/widgets/scroll-indicator/';
- var CHANNEL_NAMESPACE = 'goinstant-widgets-scroll-indicator-';
-
 /**
  * A list of the supported options.
  * @const
@@ -9205,10 +9227,6 @@ var DISPLAYNAME_REGEX = /\/displayName$/;
   */
 function ScrollIndicator(opts) {
   this._options = this._validateOptions(opts);
-
-  this._options.keyNamespace = KEY_NAMESPACE + this._options.namespace;
-  this._options.channelNamespace = CHANNEL_NAMESPACE + this._options.namespace;
-  delete this._options.namespace;
 
   // Choose an identifier for this element.
   // TODO: Need a more robust solution here
@@ -9367,8 +9385,15 @@ ScrollIndicator.prototype._validateOptions = function(opts) {
   }
 
   if (!_.isString(opts.namespace)) {
-    throw new Error('Invalid namespace option');
+    throw new Error('Invalid namespace option: String required');
+  } else if (opts.namespace !== '') {
+    try {
+      opts.room.key(opts.namespace);
+    } catch (namespaceErr) {
+      throw new Error('Invalid namespace option: Must be valid key syntax');
+    }
   }
+
 
   return opts;
 };
@@ -9682,6 +9707,8 @@ require.register("scroll-indicator/lib/event_indicator.js", function(exports, re
 
 var _ = require('lodash');
 
+var CHANNEL_NAMESPACE = 'goinstant-widgets-scroll-indicator';
+
 /**
  * Instantiates the EventIndicator instance.
  * @constructor
@@ -9697,7 +9724,11 @@ function EventIndicator(component) {
   this._showUI = component._options.eventUI;
   this._room = component._options.room;
 
-  this._namespace = component._options.channelNamespace;
+  this._namespace = CHANNEL_NAMESPACE;
+
+  if (component._options.namespace) {
+    this._namespace += ('-' + component._options.namespace);
+  }
 
   this._localUser = null;
   this._channel = null;
@@ -9827,6 +9858,8 @@ require.register("scroll-indicator/lib/position_indicator.js", function(exports,
 
 var _ = require('lodash');
 
+var KEY_NAMESPACE = 'goinstant/widgets/scroll-indicator';
+
 /**
  * @constructor
  */
@@ -9852,10 +9885,17 @@ function PositionIndicator(component) {
   // as looking at a different "place"
   this._threshold = component._options.threshold;
 
-  this._namespace = component._options.keyNamespace;
-
   // The key and object for the local platform user.
-  this._userKey = null;
+  this._userKey = this._room.self();
+
+  // Creates storage key based off local user key and namespace.
+  var baseKey = this._userKey.key(KEY_NAMESPACE);
+
+  if (component._options.namespace) {
+    baseKey = baseKey.key(component._options.namespace);
+  }
+
+  this._positionKey = baseKey.key(component._id);
 
   _.bindAll(this, '_scrollHandler', '_resizeHandler', '_updateIndicator',
                   '_changeHandler', '_leaveHandler', '_callback');
@@ -9868,8 +9908,6 @@ function PositionIndicator(component) {
  * @param {function} cb The function to call when initialization is complete.
  */
 PositionIndicator.prototype.initialize = function(cb) {
-  this._userKey = this._userCache.getLocalUserKey();
-
   // Add the local event handlers.
   this._scrollTracker.on('scroll', this._scrollHandler);
   this._resizeTracker.on('resize', this._resizeHandler);
@@ -9899,7 +9937,7 @@ PositionIndicator.prototype.destroy = function(cb) {
 
   // Remove the stored key data. This will cause the indicator to disappear
   // on remote clients.
-  var key = this._userKey.key(this._keyName());
+  var key = this._positionKey;
   key.remove(cb);
 };
 
@@ -9954,7 +9992,7 @@ PositionIndicator.prototype._storeData = function() {
     size: this._resizeTracker.getSize()
   };
 
-  var key = this._userKey.key(this._keyName());
+  var key = this._positionKey;
   key.set(data, { bubble: true, local: true }, this._callback);
 
   this._emitter.emit('localPositionChange',
@@ -10098,7 +10136,7 @@ PositionIndicator.prototype._determineDirections = function(remoteData) {
  * @return {string} The sub-key name.
  */
 PositionIndicator.prototype._keyName = function() {
- return this._namespace + '/' + this._component._id;
+  return this._positionKey.name;
 };
 
 /**
