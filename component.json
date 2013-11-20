@@ -5,13 +5,13 @@
   "version": "1.1.1",
   "keywords": [],
   "dependencies": {
-    "component/emitter": "*",
-    "lodash/lodash": "*",
-    "stagas/binder": "*",
-    "caolan/async": "*",
-    "yields/data": "*",
-    "goinstant/usercache": "*",
-    "goinstant/colors-common": "*"
+    "component/emitter": "1.1.0",
+    "lodash/lodash": "2.3.0",
+    "stagas/binder": "0.0.1",
+    "caolan/async": "f01b3992fbe7aa2f4881152143608ad666aea1cc",
+    "yields/data": "0.0.3",
+    "goinstant/usercache": "v1.0.0",
+    "goinstant/colors-common": "v1.0.0"
   },
   "development": {
     "visionmedia/mocha": "*",
