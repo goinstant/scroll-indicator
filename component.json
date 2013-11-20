@@ -33,6 +33,7 @@
     "components.css"
   ],
   "images": [
-    "images/icons.png"
+    "images/icons.png",
+    "images/icons@2x.png"
   ]
 }

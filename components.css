@@ -1,63 +1,110 @@
-.gi-scroll-up,
-.gi-scroll-down-right,
-.gi-scroll-left {
-  position: relative;
-  width: 300px;
-  z-index: 9990;
+/* ==========================================================================
+   GoInstant Scroll Indicator Widget Styles
+   ========================================================================== */
+
+/* Change box model */
+[class^="gi-scroll-"] {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
 
-.gi-scroll-up {
-  position: fixed;
-  top: 0;
-  right: 0;
-}
-
-.gi-scroll-down-right {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-}
-
+/* Scroll Container */
+.gi-scroll-up,
+.gi-scroll-down-right,
 .gi-scroll-left {
   position: fixed;
-  bottom: 0;
-  left: 0;
+  width: 270px;
+  z-index: 9990;
+  padding: 10px 10px 5px;
 }
 
-.gi-scroll-icon {
-  background-image: url('images/icons.png');
-  background-repeat: no-repeat;
-  float: left;
-  height: 37px;
-  margin-right: 5px;
-  width: 40px;
-}
+/* 
+   Positioning
+   ========================================================================== */
 
-.gi-scroll-left .gi-scroll-icon {
-  background-position: 0 -37px;
-}
+  /* Scrolling Up */
+  .gi-scroll-up {
+    top: 0;
+    right: 0;
+  }
 
-.gi-scroll-right .gi-scroll-icon {
-  background-position: -40px -37px;
-}
+  /* Scrolling Down, Right */
+  .gi-scroll-down-right {
+    bottom: 0;
+    right: 0;
+  }
 
-.gi-scroll-down .gi-scroll-icon {
-  background-position: -40px 0;
-}
+  /* Scrolling Left */
+  .gi-scroll-left {
+    bottom: 0;
+    left: 0;
+  }
+
+
+/* 
+   Indicator Body
+   ========================================================================== */
 
 .gi-scroll {
-  padding: 2px;
-  font-size: 13px;  
+  position: relative;
+  height: 40px;
+  margin-bottom: 5px;
+  font-size: 13px;
   font-family: sans-serif;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
+    /* Gradient */
+  background-image: -moz-linear-gradient(top,  rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.15)), color-stop(100%,rgba(255,255,255,0)));
+  background-image: -webkit-linear-gradient(top,  rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 100%);
+  background-image: -o-linear-gradient(top,  rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 100%);
+  background-image: -ms-linear-gradient(top,  rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 100%);
+  background-image: linear-gradient(to bottom,  rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 100%);
 }
 
 .gi-scroll-msg {
-  line-height: 37px;
+  margin-left: 37px;
+  padding: 14px 14px 14px 5px;
+  line-height: 1;
   overflow: hidden;
-  text-align: center;
-  text-overflow: ellipsis;
-  width: 251px;
   white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+  color: white;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
+
+
+/* 
+   Scrolling Icon
+   ========================================================================== */
+
+.gi-scroll-icon {
+  display: block;
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 9px;
+  top: 9px;
+  background-image: url('images/icons.png');
+  background-repeat: no-repeat;
+}
+@media print, (-webkit-min-device-pixel-ratio: 1.25), (min-resolution: 120dpi) {
+  .gi-scroll-icon {
+    background-image: url('images/icons@2x.png');
+    background-size: 85px 22px;
+  }
+}
+
+  .gi-scroll-left .gi-scroll-icon {
+    background-position: -42px 0;
+  }
+
+  .gi-scroll-right .gi-scroll-icon {
+    background-position: -63px 0;
+  }
+
+  .gi-scroll-down .gi-scroll-icon {
+    background-position: -21px 0;
+  }
