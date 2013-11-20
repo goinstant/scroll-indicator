@@ -34,7 +34,7 @@ describe('PositionIndicator', function() {
     };
 
     namespaceKey = {
-      set: sinon.spy(),
+      set: sinon.stub().yields(),
       remove: sinon.stub().yields(),
       key: sinon.spy(function(keyName) {
         namespaceKey.name = this.name + '/' + keyName;

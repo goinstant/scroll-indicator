@@ -107,13 +107,9 @@ ScrollIndicator.prototype.initialize = function(cb) {
 
     var tasks = [];
 
-    var eventIndicator = self._eventIndicator;
-    tasks.push(_.bind(eventIndicator.initialize, eventIndicator));
+    self._eventIndicator.initialize();
 
-    var positionIndicator = self._positionIndicator;
-    tasks.push(_.bind(positionIndicator.initialize, positionIndicator));
-
-    async.parallel(tasks, cb);
+    self._positionIndicator.initialize(cb);
   });
 };
 
@@ -128,14 +124,12 @@ ScrollIndicator.prototype.destroy = function(cb) {
   // Remove all emitter listeners. This is a synchronous operation.
   this._emitter.off();
 
-  // Destroy the view. This is a synchronous operation.
+  // These are both synchronous destroys.
   this._view.destroy();
+  this._eventIndicator.destroy();
 
   var userCache = this._userCache;
   tasks.push(_.bind(userCache.destroy, userCache));
-
-  var eventIndicator = this._eventIndicator;
-  tasks.push(_.bind(eventIndicator.destroy, eventIndicator));
 
   var positionIndicator = this._positionIndicator;
   tasks.push(_.bind(positionIndicator.destroy, positionIndicator));
