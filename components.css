@@ -2,20 +2,22 @@
    GoInstant Scroll Indicator Widget Styles
    ========================================================================== */
 
-/* Change box model */
-[class^="gi-scroll-"] {
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
-}
-
 /* Scroll Container */
 .gi-scroll-up,
 .gi-scroll-down-right,
 .gi-scroll-left {
   position: fixed;
-  width: 270px;
+  width: 285px;
   z-index: 9990;
   padding: 10px 10px 5px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+/* Change box model */
+[class^="gi-scroll"] {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
 }
 
 /* 
