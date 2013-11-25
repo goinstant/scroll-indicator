@@ -65,8 +65,8 @@ describe('EventIndicator', function() {
 
     sinon.spy(fakeChannel, 'message');
 
-    fakeChannel.on = sinon.stub().callsArg(2);
-    fakeChannel.off = sinon.stub().callsArg(2);
+    fakeChannel.on = sinon.stub();
+    fakeChannel.off = sinon.stub();
 
     fakeRoom.channel = sinon.spy(function() {
       return fakeChannel;
@@ -90,16 +90,16 @@ describe('EventIndicator', function() {
 
   describe ('Initialize', function() {
 
-    afterEach(function(done) {
-      eventIndicator.destroy(done);
+    afterEach(function() {
+      eventIndicator.destroy();
     });
 
-    it ('Initializes without errors', function(done) {
+    it ('Initializes without errors', function() {
       eventIndicator = new EventIndicator(fakeScrollIndicator);
-      eventIndicator.initialize(done);
+      eventIndicator.initialize();
     });
 
-    it ('Initializes when namespace is specified', function(done) {
+    it ('Initializes when namespace is specified', function() {
       fakeScrollIndicator._options.namespace = 'test-namespace';
 
       eventIndicator = new EventIndicator(fakeScrollIndicator);
@@ -108,100 +108,61 @@ describe('EventIndicator', function() {
       var id = fakeScrollIndicator._id;
       var fakeNamespace = CHANNEL_NAMESPACE + '-' + namespace + '-' + id;
 
-      eventIndicator.initialize(function(err) {
-        assert.ifError(err);
-        sinon.assert.calledWith(eventIndicator._room.channel, fakeNamespace);
-        done();
-      });
+      eventIndicator.initialize();
+      sinon.assert.calledWith(eventIndicator._room.channel, fakeNamespace);
     });
 
-    it ('Initializes when namespace is not specified', function(done) {
+    it ('Initializes when namespace is not specified', function() {
       eventIndicator = new EventIndicator(fakeScrollIndicator);
 
       var fakeNamespace = CHANNEL_NAMESPACE + '-' + fakeScrollIndicator._id;
 
-      eventIndicator.initialize(function(err) {
-        assert.ifError(err);
-        sinon.assert.calledWith(eventIndicator._room.channel, fakeNamespace);
-        done();
-      });
+      eventIndicator.initialize();
+      sinon.assert.calledWith(eventIndicator._room.channel, fakeNamespace);
     });
-
-    it ('errors when registering listener to channel', function(done) {
-      var fakeError = new Error('Failed to register listener.');
-      fakeChannel.on = sinon.stub().callsArgWith(2, fakeError);
-
-      eventIndicator.initialize(function(err) {
-
-        assert.equal(err.message, 'Failed to register listener.');
-        done();
-      });
-
-    });
-
   });
 
   describe ('Destroy', function() {
 
-    beforeEach(function(done) {
+    beforeEach(function() {
       eventIndicator = new EventIndicator(fakeScrollIndicator);
-      eventIndicator.initialize(done);
+      eventIndicator.initialize();
     });
 
-    it ('Destroys without error', function(done) {
-      eventIndicator.destroy(done);
+    it ('Destroys without error', function() {
+      eventIndicator.destroy();
     });
 
-    it ('Calls scrollTracker.off', function(done) {
-      eventIndicator.destroy(function(err) {
-        assert.ifError(err);
+    it ('Calls scrollTracker.off', function() {
+      eventIndicator.destroy();
 
-        var scrollTracker = eventIndicator._scrollTracker;
-        var listener = eventIndicator._scrollHandler;
+      var scrollTracker = eventIndicator._scrollTracker;
+      var listener = eventIndicator._scrollHandler;
 
-        sinon.assert.called(scrollTracker.off);
-        sinon.assert.calledWith(scrollTracker.off, 'scroll', listener);
-        done();
-      });
-
+      sinon.assert.called(scrollTracker.off);
+      sinon.assert.calledWith(scrollTracker.off, 'scroll', listener);
     });
 
-   it ('Calls channel.off', function(done) {
-      eventIndicator.destroy(function(err) {
-       assert.ifError(err);
+   it ('Calls channel.off', function() {
+      eventIndicator.destroy();
 
-        var channel = eventIndicator._channel;
-        var listener = eventIndicator._messageListener;
+      var channel = eventIndicator._channel;
+      var listener = eventIndicator._messageListener;
 
-        sinon.assert.called(channel.off);
-        sinon.assert.calledWith(channel.off, 'message', listener);
-        done();
-      });
-
+      sinon.assert.called(channel.off);
+      sinon.assert.calledWith(channel.off, 'message', listener);
     });
-
-    it ('Channel.off returns an error', function(done) {
-      var fakeError = new Error('Failed to remove listener.');
-      fakeChannel.off = sinon.stub().callsArgWith(2, fakeError);
-
-      eventIndicator.destroy(function(err) {
-        assert.equal(err.message ,'Failed to remove listener.');
-        done();
-      });
-
-    });
-
   });
 
   describe('Scroll Event', function() {
 
-    beforeEach(function(done) {
+    beforeEach(function() {
       eventIndicator = new EventIndicator(fakeScrollIndicator);
-      eventIndicator.initialize(done);
+      eventIndicator.initialize();
     });
 
-    afterEach(function(done) {
-      eventIndicator.destroy(done);
+    afterEach(function() {
+      eventIndicator.destroy();
     });
 
     it ('Calls channel.message', function() {
@@ -280,15 +241,15 @@ describe('EventIndicator', function() {
   describe('Error Handler', function() {
     var fakeError = null;
 
-    beforeEach(function(done) {
+    beforeEach(function() {
       fakeError = new Error('Fake error.');
 
       eventIndicator = new EventIndicator(fakeScrollIndicator);
-      eventIndicator.initialize(done);
+      eventIndicator.initialize();
     });
 
-    afterEach(function(done) {
-      eventIndicator.destroy(done);
+    afterEach(function() {
+      eventIndicator.destroy();
     });
 
     it ('Callback returns the error', function() {
