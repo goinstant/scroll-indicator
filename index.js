@@ -105,8 +105,6 @@ ScrollIndicator.prototype.initialize = function(cb) {
       return cb(err);
     }
 
-    var tasks = [];
-
     self._eventIndicator.initialize();
 
     self._positionIndicator.initialize(cb);
