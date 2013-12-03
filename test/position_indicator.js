@@ -78,7 +78,7 @@ describe('PositionIndicator', function() {
     remoteUser = {
       id: 'id2',
       goinstant: {
-        components: {
+        widgets: {
           'scroll-indicator': {
             elemId: {
               position: { top: 0, bottom: 0, left: 100, right: 100 },
@@ -147,7 +147,7 @@ describe('PositionIndicator', function() {
   });
 
   it('adds an indicator for remote user below', function() {
-    remoteUser.goinstant.components['scroll-indicator'].elemId.position = {
+    remoteUser.goinstant.widgets['scroll-indicator'].elemId.position = {
       top: 100, left: 0, bottom: 200, right: 100
     };
     mockComponent._userCache.emit('change', remoteUser, keyName);
@@ -164,7 +164,7 @@ describe('PositionIndicator', function() {
 
   it('does not add an indicator when positionUI is false', function() {
     positionIndicator._showUI = false;
-    remoteUser.goinstant.components['scroll-indicator'].elemId.position = {
+    remoteUser.goinstant.widgets['scroll-indicator'].elemId.position = {
       top: 100, left: 0, bottom: 200, right: 100
     };
     mockComponent._userCache.emit('change', remoteUser, keyName);
@@ -173,7 +173,7 @@ describe('PositionIndicator', function() {
   });
 
   it('adds an indicator for remote user above', function() {
-    remoteUser.goinstant.components['scroll-indicator'].elemId.position = {
+    remoteUser.goinstant.widgets['scroll-indicator'].elemId.position = {
       top: -100, left: 0, bottom: 0, right: 100
     };
     mockComponent._userCache.emit('change', remoteUser, keyName);
@@ -183,7 +183,7 @@ describe('PositionIndicator', function() {
   });
 
   it('adds an indicator for remote user to the left', function() {
-    remoteUser.goinstant.components['scroll-indicator'].elemId.position = {
+    remoteUser.goinstant.widgets['scroll-indicator'].elemId.position = {
       top: 0, left: -100, bottom: 100, right: 0
     };
     mockComponent._userCache.emit('change', remoteUser, keyName);
@@ -193,7 +193,7 @@ describe('PositionIndicator', function() {
   });
 
   it('adds an indicator for remote user to the right', function() {
-    remoteUser.goinstant.components['scroll-indicator'].elemId.position = {
+    remoteUser.goinstant.widgets['scroll-indicator'].elemId.position = {
       top: 0, left: 100, bottom: 100, right: 200
     };
     mockComponent._userCache.emit('change', remoteUser, keyName);
@@ -223,7 +223,7 @@ describe('PositionIndicator', function() {
       var size = { width: 200, height: 200 };
       mockComponent._resizeTracker.emit('resize', size);
 
-      remoteUser.goinstant.components['scroll-indicator'].elemId.position = {
+      remoteUser.goinstant.widgets['scroll-indicator'].elemId.position = {
         top: 1000, left: 1000, bottom: 1100, right: 1100
       };
       mockComponent._userCache.emit('change', remoteUser, keyName);
