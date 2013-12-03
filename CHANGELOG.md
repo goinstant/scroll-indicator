@@ -1,5 +1,11 @@
 # Scroll Indicator Changelog
 
+### v1.2.0
+
+- Added examples.
+- Added new default styles.
+- Removed depricated interfaces.
+
 ### v1.1.1
 
 - Namespacing bug fix.

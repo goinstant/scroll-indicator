@@ -378,7 +378,7 @@ module.exports = require('./dist/lodash.compat.js');
 require.register("lodash-lodash/dist/lodash.compat.js", function(exports, require, module){
 /**
  * @license
- * Lo-Dash 2.2.1 (Custom Build) <http://lodash.com/>
+ * Lo-Dash 2.3.0 (Custom Build) <http://lodash.com/>
  * Build: `lodash -o ./dist/lodash.compat.js`
  * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
  * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
@@ -436,7 +436,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
   var reFlags = /\w*$/;
 
   /** Used to detected named functions */
-  var reFuncName = /^function[ \n\r\t]+\w/;
+  var reFuncName = /^\s*function[ \n\r\t]+\w/;
 
   /** Used to match "interpolate" template delimiters */
   var reInterpolate = /<%=([\s\S]+?)%>/g;
@@ -1386,13 +1386,13 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      *
      * @private
      * @param {*} value The value to clone.
-     * @param {boolean} [deep=false] Specify a deep clone.
+     * @param {boolean} [isDeep=false] Specify a deep clone.
      * @param {Function} [callback] The function to customize cloning values.
      * @param {Array} [stackA=[]] Tracks traversed source objects.
      * @param {Array} [stackB=[]] Associates clones with source counterparts.
      * @returns {*} Returns the cloned value.
      */
-    function baseClone(value, deep, callback, stackA, stackB) {
+    function baseClone(value, isDeep, callback, stackA, stackB) {
       if (callback) {
         var result = callback(value);
         if (typeof result != 'undefined') {
@@ -1425,7 +1425,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
         return value;
       }
       var isArr = isArray(value);
-      if (deep) {
+      if (isDeep) {
         // check for circular references and return corresponding clone
         var initedStack = !stackA;
         stackA || (stackA = getArray());
@@ -1452,7 +1452,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
         }
       }
       // exit for shallow clone
-      if (!deep) {
+      if (!isDeep) {
         return result;
       }
       // add the source value to the stack of traversed objects
@@ -1462,7 +1462,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
 
       // recursively populate clone (susceptible to call stack limits)
       (isArr ? baseEach : forOwn)(value, function(objValue, key) {
-        result[key] = baseClone(objValue, deep, callback, stackA, stackB);
+        result[key] = baseClone(objValue, isDeep, callback, stackA, stackB);
       });
 
       if (initedStack) {
@@ -1579,20 +1579,18 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
 
       function bound() {
         var thisBinding = isBind ? thisArg : this;
-        if (isCurry || partialArgs || partialRightArgs) {
-          if (partialArgs) {
-            var args = partialArgs.slice();
-            push.apply(args, arguments);
+        if (partialArgs) {
+          var args = partialArgs.slice();
+          push.apply(args, arguments);
+        }
+        if (partialRightArgs || isCurry) {
+          args || (args = slice(arguments));
+          if (partialRightArgs) {
+            push.apply(args, partialRightArgs);
           }
-          if (partialRightArgs || isCurry) {
-            args || (args = slice(arguments));
-            if (partialRightArgs) {
-              push.apply(args, partialRightArgs);
-            }
-            if (isCurry && args.length < arity) {
-              bitmask |= 16 & ~32;
-              return baseCreateWrapper([func, (isCurryBound ? bitmask : bitmask & ~3), args, null, thisArg, arity]);
-            }
+          if (isCurry && args.length < arity) {
+            bitmask |= 16 & ~32;
+            return baseCreateWrapper([func, (isCurryBound ? bitmask : bitmask & ~3), args, null, thisArg, arity]);
           }
         }
         args || (args = arguments);
@@ -1611,17 +1609,54 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
     }
 
     /**
+     * The base implementation of `_.difference` that accepts a single array
+     * of values to exclude.
+     *
+     * @private
+     * @param {Array} array The array to process.
+     * @param {Array} [values] The array of values to exclude.
+     * @returns {Array} Returns a new array of filtered values.
+     */
+    function baseDifference(array, values) {
+      var index = -1,
+          indexOf = getIndexOf(),
+          length = array ? array.length : 0,
+          isLarge = length >= largeArraySize && indexOf === baseIndexOf,
+          result = [];
+
+      if (isLarge) {
+        var cache = createCache(values);
+        if (cache) {
+          indexOf = cacheIndexOf;
+          values = cache;
+        } else {
+          isLarge = false;
+        }
+      }
+      while (++index < length) {
+        var value = array[index];
+        if (indexOf(values, value) < 0) {
+          result.push(value);
+        }
+      }
+      if (isLarge) {
+        releaseObject(values);
+      }
+      return result;
+    }
+
+    /**
      * The base implementation of `_.flatten` without support for callback
      * shorthands or `thisArg` binding.
      *
      * @private
      * @param {Array} array The array to flatten.
      * @param {boolean} [isShallow=false] A flag to restrict flattening to a single level.
-     * @param {boolean} [isArgArrays=false] A flag to restrict flattening to arrays and `arguments` objects.
+     * @param {boolean} [isStrict=false] A flag to restrict flattening to arrays and `arguments` objects.
      * @param {number} [fromIndex=0] The index to start from.
      * @returns {Array} Returns a new flattened array.
      */
-    function baseFlatten(array, isShallow, isArgArrays, fromIndex) {
+    function baseFlatten(array, isShallow, isStrict, fromIndex) {
       var index = (fromIndex || 0) - 1,
           length = array ? array.length : 0,
           result = [];
@@ -1633,7 +1668,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
             && (isArray(value) || isArguments(value))) {
           // recursively flatten arrays (susceptible to call stack limits)
           if (!isShallow) {
-            value = baseFlatten(value, isShallow, isArgArrays);
+            value = baseFlatten(value, isShallow, isStrict);
           }
           var valIndex = -1,
               valLength = value.length,
@@ -1643,7 +1678,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
           while (++valIndex < valLength) {
             result[resIndex++] = value[valIndex];
           }
-        } else if (!isArgArrays) {
+        } else if (!isStrict) {
           result.push(value);
         }
       }
@@ -2400,7 +2435,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
     });
 
     /**
-     * Creates a clone of `value`. If `deep` is `true` nested objects will also
+     * Creates a clone of `value`. If `isDeep` is `true` nested objects will also
      * be cloned, otherwise they will be assigned by reference. If a callback
      * is provided it will be executed to produce the cloned values. If the
      * callback returns `undefined` cloning will be handled by the method instead.
@@ -2410,7 +2445,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * @memberOf _
      * @category Objects
      * @param {*} value The value to clone.
-     * @param {boolean} [deep=false] Specify a deep clone.
+     * @param {boolean} [isDeep=false] Specify a deep clone.
      * @param {Function} [callback] The function to customize cloning values.
      * @param {*} [thisArg] The `this` binding of `callback`.
      * @returns {*} Returns the cloned value.
@@ -2439,15 +2474,15 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * clone.childNodes.length;
      * // => 0
      */
-    function clone(value, deep, callback, thisArg) {
+    function clone(value, isDeep, callback, thisArg) {
       // allows working with "Collections" methods without using their `index`
-      // and `collection` arguments for `deep` and `callback`
-      if (typeof deep != 'boolean' && deep != null) {
+      // and `collection` arguments for `isDeep` and `callback`
+      if (typeof isDeep != 'boolean' && isDeep != null) {
         thisArg = callback;
-        callback = deep;
-        deep = false;
+        callback = isDeep;
+        isDeep = false;
       }
-      return baseClone(value, deep, typeof callback == 'function' && baseCreateCallback(callback, thisArg, 1));
+      return baseClone(value, isDeep, typeof callback == 'function' && baseCreateCallback(callback, thisArg, 1));
     }
 
     /**
@@ -3355,7 +3390,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
         forIn(object, function(value, key) {
           props.push(key);
         });
-        props = difference(props, baseFlatten(arguments, true, false, 1));
+        props = baseDifference(props, baseFlatten(arguments, true, false, 1));
 
         var index = -1,
             length = props.length;
@@ -3593,7 +3628,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * _.contains({ 'name': 'fred', 'age': 40 }, 'fred');
      * // => true
      *
-     * _.contains('pebbles', 'ur');
+     * _.contains('pebbles', 'eb');
      * // => true
      */
     function contains(collection, target, fromIndex) {
@@ -4734,7 +4769,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * @memberOf _
      * @category Arrays
      * @param {Array} array The array to process.
-     * @param {...Array} [array] The arrays of values to exclude.
+     * @param {...Array} [values] The arrays of values to exclude.
      * @returns {Array} Returns a new array of filtered values.
      * @example
      *
@@ -4742,33 +4777,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * // => [1, 3, 4]
      */
     function difference(array) {
-      var index = -1,
-          indexOf = getIndexOf(),
-          length = array ? array.length : 0,
-          seen = baseFlatten(arguments, true, true, 1),
-          result = [];
-
-      var isLarge = length >= largeArraySize && indexOf === baseIndexOf;
-
-      if (isLarge) {
-        var cache = createCache(seen);
-        if (cache) {
-          indexOf = cacheIndexOf;
-          seen = cache;
-        } else {
-          isLarge = false;
-        }
-      }
-      while (++index < length) {
-        var value = array[index];
-        if (indexOf(seen, value) < 0) {
-          result.push(value);
-        }
-      }
-      if (isLarge) {
-        releaseObject(seen);
-      }
-      return result;
+      return baseDifference(array, baseFlatten(arguments, true, true, 1));
     }
 
     /**
@@ -5632,7 +5641,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * // => [2, 3, 4]
      */
     function without(array) {
-      return difference(array, slice(arguments, 1));
+      return baseDifference(array, slice(arguments, 1));
     }
 
     /**
@@ -7221,7 +7230,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * @memberOf _
      * @type string
      */
-    lodash.VERSION = '2.2.1';
+    lodash.VERSION = '2.3.0';
 
     // add "Chaining" functions to the wrapper
     lodash.prototype.chain = wrapperChain;
@@ -7322,6 +7331,9 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
 
 });
 require.register("component-event/index.js", function(exports, require, module){
+var bind = window.addEventListener ? 'addEventListener' : 'attachEvent',
+    unbind = window.removeEventListener ? 'removeEventListener' : 'detachEvent',
+    prefix = bind !== 'addEventListener' ? 'on' : '';
 
 /**
  * Bind `el` event `type` to `fn`.
@@ -7335,11 +7347,8 @@ require.register("component-event/index.js", function(exports, require, module){
  */
 
 exports.bind = function(el, type, fn, capture){
-  if (el.addEventListener) {
-    el.addEventListener(type, fn, capture || false);
-  } else {
-    el.attachEvent('on' + type, fn);
-  }
+  el[bind](prefix + type, fn, capture || false);
+
   return fn;
 };
 
@@ -7355,14 +7364,10 @@ exports.bind = function(el, type, fn, capture){
  */
 
 exports.unbind = function(el, type, fn, capture){
-  if (el.removeEventListener) {
-    el.removeEventListener(type, fn, capture || false);
-  } else {
-    el.detachEvent('on' + type, fn);
-  }
+  el[unbind](prefix + type, fn, capture || false);
+
   return fn;
 };
-
 });
 require.register("component-query/index.js", function(exports, require, module){
 function one(selector, el) {
@@ -7440,20 +7445,21 @@ require.register("discore-closest/index.js", function(exports, require, module){
 var matches = require('matches-selector')
 
 module.exports = function (element, selector, checkYoSelf, root) {
-  element = checkYoSelf ? element : element.parentNode
+  element = checkYoSelf ? {parentNode: element} : element
+
   root = root || document
 
-  do {
+  // Make sure `element !== document` and `element != null`
+  // otherwise we get an illegal invocation
+  while ((element = element.parentNode) && element !== document) {
     if (matches(element, selector))
       return element
     // After `matches` on the edge case that
     // the selector matches the root
     // (when the root is not the document)
     if (element === root)
-      return
-    // Make sure `element !== document`
-    // otherwise we get an illegal invocation
-  } while ((element = element.parentNode) && element !== document)
+      return  
+  }
 }
 });
 require.register("component-delegate/index.js", function(exports, require, module){
@@ -7546,7 +7552,9 @@ exports.on = function(el, event, selector, fn, capture){
 };
 
 /**
- * Unbind `event` listener `fn` for `el`.
+ * Unbind to `event` for `el` and invoke `fn(e)`.
+ * When a `selector` is given then delegated event
+ * handlers are unbound.
  *
  * @param {Element} el
  * @param {String} event
@@ -8778,6 +8786,7 @@ var VALID_EVENTS = ['join', 'leave', 'change'];
  */
 function UserCache(room) {
   this._room = room;
+
   this._users = {};
   this._usersKeys = {};
   this._localUserId = null;
@@ -8787,35 +8796,27 @@ function UserCache(room) {
   _.bindAll(this, [
     '_updateUser',
     '_handleLeaveEvent',
-    '_handleJoinEvent',
-    '_getUsers',
-    '_bindPlatformEvents',
-    '_getLocalUserId'
+    '_handleJoinEvent'
   ]);
 }
 
 /**
  * Initializes the UserCache by binding to platform events.
  * @param {function} cb A callback function.
- * @return {function} A callback function.
  */
 UserCache.prototype.initialize = function(cb) {
   if (!cb || !_.isFunction(cb)) {
     throw new Error('Callback was not found or invalid');
   }
 
-  var tasks = [
-    this._getLocalUserId,
-    this._bindPlatformEvents,
-    this._getUsers
-  ];
+  this._getLocalUserId();
+  this._bindEvents();
 
   var self = this;
 
-  async.series(tasks, function(err) {
+  this._getUsers(function(err) {
     if (err) {
-      return self.destroy(function() {
-        // Ignore destroy errors here since we're erroring anyways.
+      self.destroy(function() {
         return cb(err);
       });
     }
@@ -8826,28 +8827,25 @@ UserCache.prototype.initialize = function(cb) {
 
 /**
  * Destroys the UserCache instance.
- * @param {function} cb A callback function.
- * @return {function} A callback function.
+ * @public
  */
 UserCache.prototype.destroy = function(cb) {
-  var self = this;
+  var users = this._room.users;
 
-  if (!cb || !_.isFunction(cb)) {
-    throw new Error('Callback was not found or invalid');
-  }
+  var usersSetOptions = {
+    local: true,
+    bubble: true,
+    listener: this._updateUser
+  };
 
-  var users = self._room.key('/.users');
+  this._room.off('leave', this._handleLeaveEvent);
+  this._room.off('join', this._handleJoinEvent);
+  users.off('set', usersSetOptions);
+  users.off('remove', usersSetOptions);
 
-  var tasks = [
-    _.bind(self._room.off, self._room, 'leave', self._handleLeaveEvent),
-    _.bind(self._room.off, self._room, 'join', self._handleJoinEvent),
-    _.bind(users.off, users, 'set', self._updateUser),
-    _.bind(users.off, users, 'remove', self._updateUser)
-  ];
+  this._emitter.off();
 
-  self._emitter.off();
-
-  async.parallel(tasks, cb);
+  cb();
 };
 
 /**
@@ -8909,7 +8907,7 @@ UserCache.prototype.getAllUserKeys = function() {
  * @return {object} The local user's key.
  */
 UserCache.prototype.getLocalUserKey = function() {
-  return this.getUserKey(this._localUserId);
+  return this._room.self();
 };
 
 /**
@@ -8925,7 +8923,6 @@ UserCache.prototype.on = function(event, listener) {
   if (!_.isFunction(listener)) {
     throw new Error('Invalid argument: listener function is required');
   }
-
   this._emitter.on(event, listener);
 };
 
@@ -8945,19 +8942,12 @@ UserCache.prototype.off = function(event, listener) {
 /**
  * Gets the local user's ID
  * @private
- * @param {function} cb A callback function.
  */
-UserCache.prototype._getLocalUserId = function(cb) {
-  var self = this;
+UserCache.prototype._getLocalUserId = function() {
+  var selfKey = this._room.self();
+  var path = selfKey.name.split('/');
 
-  this._room.user(function(err, user) {
-    if (err) {
-      return cb(err);
-    }
-
-    self._localUserId = user.id;
-    cb();
-  });
+  this._localUserId = path[2];
 };
 
 /**
@@ -8966,44 +8956,43 @@ UserCache.prototype._getLocalUserId = function(cb) {
  * @param {function} cb A callback function.
  */
 UserCache.prototype._getUsers = function(cb) {
+  var usersKey = this._room.users;
+
   var self = this;
 
-  this._room.users(function(err, userMap, keyMap) {
+  usersKey.get(function(err, users) {
     if (err) {
       return cb(err);
     }
 
-    self._users = userMap;
-    self._usersKeys = keyMap;
+    self._users = users;
+
+    // Create a reference to each user's key
+    _.each(users, function(userObj, keyName) {
+      self._usersKeys[keyName] = self._room.user(keyName);
+    });
 
     cb();
   });
 };
 
 /**
- * Binds to room.join, room.leave and user key.set
+ * Binds to room.join, room.leave and user key.set/key.remove
  * @private
- * @param {function} cb A callback function.
- * @return {function} A callback function.
  */
-UserCache.prototype._bindPlatformEvents = function(cb) {
-  var self = this;
-  var users = self._room.key('/.users');
+UserCache.prototype._bindEvents = function() {
+  var users = this._room.users;
 
-  var metaOptions = {
+  var usersSetOptions = {
     local: true,
     bubble: true,
-    listener: self._updateUser
+    listener: this._updateUser
   };
 
-  var tasks = [
-    _.bind(self._room.on, self._room, 'leave', self._handleLeaveEvent),
-    _.bind(self._room.on, self._room, 'join', self._handleJoinEvent),
-    _.bind(users.on, users, 'set', metaOptions),
-    _.bind(users.on, users, 'remove', metaOptions)
-  ];
-
-  async.parallel(tasks, cb);
+  this._room.on('leave', this._handleLeaveEvent);
+  this._room.on('join', this._handleJoinEvent);
+  users.on('set', usersSetOptions);
+  users.on('remove', usersSetOptions);
 };
 
 /**
@@ -9014,17 +9003,28 @@ UserCache.prototype._bindPlatformEvents = function(cb) {
  * @param {context} context A key context object for the event.
  */
 UserCache.prototype._updateUser = function(value, context) {
-  var self = this;
+  var path = context.key.split('/');
+  var userId = path[2];
+  var userKeyPath = path.slice(3);
 
-  // TODO : Do this more efficiently by just merging the new data in.
-  this._room.key('/.users/' + context.userId).get(function(err, user) {
-    if (err) {
-      throw err;
-    }
+  var user = this._users[userId];
 
-    self._users[user.id] = user;
-    self._emitter.emit('change', user, context.key);
-  });
+  var merge = {};
+  var currentKey = merge;
+
+  // Create structure of object to be merged
+  for (var i = 0; i < userKeyPath.length -1; i++) {
+    var key = userKeyPath[i];
+    currentKey[key] = {};
+    currentKey = currentKey[key];
+  }
+
+  var lastKey = _.last(userKeyPath);
+  currentKey[lastKey] = value;
+
+  _.merge(user, merge);
+
+  this._emitter.emit('change', user, context.key);
 };
 
 /**
@@ -9034,7 +9034,7 @@ UserCache.prototype._updateUser = function(value, context) {
  */
 UserCache.prototype._handleJoinEvent = function(user) {
   this._users[user.id] = user;
-  this._usersKeys[user.id] = this._room.key('/.users/' + user.id);
+  this._usersKeys[user.id] = this._room.user(user.id);
 
   this._emitter.emit('join', user);
 };
@@ -9263,15 +9263,9 @@ ScrollIndicator.prototype.initialize = function(cb) {
       return cb(err);
     }
 
-    var tasks = [];
+    self._eventIndicator.initialize();
 
-    var eventIndicator = self._eventIndicator;
-    tasks.push(_.bind(eventIndicator.initialize, eventIndicator));
-
-    var positionIndicator = self._positionIndicator;
-    tasks.push(_.bind(positionIndicator.initialize, positionIndicator));
-
-    async.parallel(tasks, cb);
+    self._positionIndicator.initialize(cb);
   });
 };
 
@@ -9286,14 +9280,12 @@ ScrollIndicator.prototype.destroy = function(cb) {
   // Remove all emitter listeners. This is a synchronous operation.
   this._emitter.off();
 
-  // Destroy the view. This is a synchronous operation.
+  // These are both synchronous destroys.
   this._view.destroy();
+  this._eventIndicator.destroy();
 
   var userCache = this._userCache;
   tasks.push(_.bind(userCache.destroy, userCache));
-
-  var eventIndicator = this._eventIndicator;
-  tasks.push(_.bind(eventIndicator.destroy, eventIndicator));
 
   var positionIndicator = this._positionIndicator;
   tasks.push(_.bind(positionIndicator.destroy, positionIndicator));
@@ -9742,20 +9734,14 @@ function EventIndicator(component) {
  * @public
  * @param {function} cb A callback function.
  */
-EventIndicator.prototype.initialize = function(cb) {
+EventIndicator.prototype.initialize = function() {
   var self = this;
 
   var channelName = this._namespace + '-' + this._id;
   this._channel = this._room.channel(channelName);
 
   this._scrollTracker.on('scroll', self._scrollHandler);
-  this._channel.on('message', self._messageListener, function(err) {
-    if (err) {
-      return cb(err);
-    }
-
-    cb();
-  });
+  this._channel.on('message', self._messageListener);
 };
 
 /**
@@ -9763,17 +9749,11 @@ EventIndicator.prototype.initialize = function(cb) {
  * @public
  * @param {function} cb A callback function.
  */
-EventIndicator.prototype.destroy = function(cb) {
+EventIndicator.prototype.destroy = function() {
   var self = this;
 
   this._scrollTracker.off('scroll', self._scrollHandler);
-  this._channel.off('message', self._messageListener, function(err) {
-    if (err) {
-      return cb(err);
-    }
-
-    cb();
-  });
+  this._channel.off('message', self._messageListener);
 };
 
 /**
@@ -9918,9 +9898,7 @@ PositionIndicator.prototype.initialize = function(cb) {
   this._updateIndicators();
 
   // And store the initial position in platform.
-  this._storeData();
-
-  cb();
+  this._storeData(cb);
 };
 
 /**
@@ -9986,17 +9964,21 @@ PositionIndicator.prototype._resizeHandler = function(newSize) {
  *
  * @private
  */
-PositionIndicator.prototype._storeData = function() {
+PositionIndicator.prototype._storeData = function(cb) {
+  cb = cb || function() {
+    // XXX: should emit errors from the widget instance
+  };
+
   var data = {
     position: this._position,
     size: this._resizeTracker.getSize()
   };
 
-  var key = this._positionKey;
-  key.set(data, { bubble: true, local: true }, this._callback);
-
   this._emitter.emit('localPositionChange',
                      this._userCache.getLocalUser(), data);
+
+  var key = this._positionKey;
+  key.set(data, { bubble: true, local: true }, cb);
 };
 
 /**
