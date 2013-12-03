@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview
- * Contains unit tests for the ScrollIndicator component.
+ * Contains unit tests for the ScrollIndicator widget.
  */
 
 describe('ScrollIndicator', function() {
