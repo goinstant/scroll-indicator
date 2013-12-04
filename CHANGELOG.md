@@ -2,6 +2,7 @@
 
 ### v1.2.0
 
+- Fixed the position indicator.
 - Added examples.
 - Added new default styles.
 - Removed depricated interfaces.

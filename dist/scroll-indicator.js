@@ -9704,22 +9704,22 @@ var CHANNEL_NAMESPACE = 'goinstant-widgets-scroll-indicator';
 /**
  * Instantiates the EventIndicator instance.
  * @constructor
- * @param {object} component The ScrollIndicator object.
+ * @param {object} widget The ScrollIndicator object.
  */
 
-function EventIndicator(component) {
-  this._scrollTracker = component._scrollTracker;
-  this._userCache = component._userCache;
-  this._emitter = component._emitter;
-  this._view = component._view;
-  this._id = component._id;
-  this._showUI = component._options.eventUI;
-  this._room = component._options.room;
+function EventIndicator(widget) {
+  this._scrollTracker = widget._scrollTracker;
+  this._userCache = widget._userCache;
+  this._emitter = widget._emitter;
+  this._view = widget._view;
+  this._id = widget._id;
+  this._showUI = widget._options.eventUI;
+  this._room = widget._options.room;
 
   this._namespace = CHANNEL_NAMESPACE;
 
-  if (component._options.namespace) {
-    this._namespace += ('-' + component._options.namespace);
+  if (widget._options.namespace) {
+    this._namespace += ('-' + widget._options.namespace);
   }
 
   this._localUser = null;
@@ -9843,15 +9843,15 @@ var KEY_NAMESPACE = 'goinstant/widgets/scroll-indicator';
 /**
  * @constructor
  */
-function PositionIndicator(component) {
-  this._component = component;
-  this._room = component._options.room;
-  this._scrollTracker = component._scrollTracker;
-  this._resizeTracker = component._resizeTracker;
-  this._userCache = component._userCache;
-  this._view = component._view;
-  this._showUI = component._options.positionUI;
-  this._emitter = component._emitter;
+function PositionIndicator(widget) {
+  this._widget = widget;
+  this._room = widget._options.room;
+  this._scrollTracker = widget._scrollTracker;
+  this._resizeTracker = widget._resizeTracker;
+  this._userCache = widget._userCache;
+  this._view = widget._view;
+  this._showUI = widget._options.positionUI;
+  this._emitter = widget._emitter;
 
   // The position of the local user's viewport.
   this._position = this._scrollTracker.getPosition();
@@ -9863,7 +9863,7 @@ function PositionIndicator(component) {
 
   // Percentage of the remote screen that has to be "off" our screen to count
   // as looking at a different "place"
-  this._threshold = component._options.threshold;
+  this._threshold = widget._options.threshold;
 
   // The key and object for the local platform user.
   this._userKey = this._room.self();
@@ -9871,11 +9871,11 @@ function PositionIndicator(component) {
   // Creates storage key based off local user key and namespace.
   var baseKey = this._userKey.key(KEY_NAMESPACE);
 
-  if (component._options.namespace) {
-    baseKey = baseKey.key(component._options.namespace);
+  if (widget._options.namespace) {
+    baseKey = baseKey.key(widget._options.namespace);
   }
 
-  this._positionKey = baseKey.key(component._id);
+  this._positionKey = baseKey.key(widget._id);
 
   _.bindAll(this, '_scrollHandler', '_resizeHandler', '_updateIndicator',
                   '_changeHandler', '_leaveHandler', '_callback');
@@ -9997,7 +9997,7 @@ PositionIndicator.prototype._updateIndicators = function() {
  * @param {object} user The remote user object.
  */
 PositionIndicator.prototype._updateIndicator = function(user) {
-  var id = this._component._id;
+  var id = this._widget._id;
   var self = this;
 
   // Never show indicators for the local user.
@@ -10005,12 +10005,12 @@ PositionIndicator.prototype._updateIndicator = function(user) {
     return;
   }
 
-  var positionData = user.goinstant && user.goinstant.components &&
-    user.goinstant.components['scroll-indicator'] &&
-    user.goinstant.components['scroll-indicator'][id];
+  var positionData = user.goinstant && user.goinstant.widgets &&
+    user.goinstant.widgets['scroll-indicator'] &&
+    user.goinstant.widgets['scroll-indicator'][id];
 
   // Just hide any indicators if the user doesn't have position data (this
-  // happens when the remote user destroys their component).
+  // happens when the remote user destroys their widget).
   if (!positionData) {
     _.each(['up', 'down', 'left', 'right'], function(direction) {
       self._view.removePositionIndicator(user, direction);
@@ -10041,7 +10041,7 @@ PositionIndicator.prototype._updateIndicator = function(user) {
 
 /**
  * Handles a change to remote user data. If the change was a remote version
- * of this component, will update the indicators to reflect the remote user's
+ * of this widget, will update the indicators to reflect the remote user's
  * position.
  *
  * @private
@@ -10049,7 +10049,7 @@ PositionIndicator.prototype._updateIndicator = function(user) {
  * @param {string} keyName The keyName indicating what changed within the user.
  */
 PositionIndicator.prototype._changeHandler = function(user, keyName) {
-  // Ignore changes to the user object that don't involve the component data.
+  // Ignore changes to the user object that don't involve the widget data.
   var regexp = new RegExp(this._keyName() + '$');
   if (!keyName.match(regexp)) {
     return;
@@ -10118,7 +10118,7 @@ PositionIndicator.prototype._determineDirections = function(remoteData) {
  * @return {string} The sub-key name.
  */
 PositionIndicator.prototype._keyName = function() {
-  return this._positionKey.name;
+  return KEY_NAMESPACE + '/' + this._widget._id;
 };
 
 /**
@@ -10126,7 +10126,7 @@ PositionIndicator.prototype._keyName = function() {
  */
 PositionIndicator.prototype._callback = function(err) {
   if (err) {
-    this._component._handleError(err);
+    this._widget._handleError(err);
   }
 };
 
