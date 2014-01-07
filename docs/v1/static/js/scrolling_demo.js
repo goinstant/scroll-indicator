@@ -31,7 +31,6 @@ function connect(options) {
         if (err) {
           return console.error("Error setting avatarColor", err);
         }
-        // The user now appears red in the user-list, etc.
       });
 
       var ScrollIndicator = goinstant.widgets.ScrollIndicator;
