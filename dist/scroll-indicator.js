@@ -7348,7 +7348,6 @@ var bind = window.addEventListener ? 'addEventListener' : 'attachEvent',
 
 exports.bind = function(el, type, fn, capture){
   el[bind](prefix + type, fn, capture || false);
-
   return fn;
 };
 
@@ -7365,7 +7364,6 @@ exports.bind = function(el, type, fn, capture){
 
 exports.unbind = function(el, type, fn, capture){
   el[unbind](prefix + type, fn, capture || false);
-
   return fn;
 };
 });
