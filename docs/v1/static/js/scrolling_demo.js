@@ -20,28 +20,25 @@ function connect(options) {
         return;
       }
 
-      currentRoom.user(function(err, user, userKey) {
-        userKey.key('displayName').set('Guest ' + options.guestId, function(err) {
-          if (err) {
-            console.log("Error setting userId", err);
-            return;
-          }
-        });
-        var color = options.guestId == "1" ? "#f00" : "#0f0";
-        userKey.key('avatarColor').set(color, function(err) {
-          if (err) {
-            return console.error(err);
-          }
-          // The user now appears red in the user-list, etc.
-        });
+      var userKey = currentRoom.self();
+      userKey.key('displayName').set('Guest ' + options.guestId, function(err) {
+        if (err) {
+          return console.error("Error setting userId", err);
+        }
+      });
+      var color = options.guestId == "1" ? "#f00" : "#0f0";
+      userKey.key('avatarColor').set(color, function(err) {
+        if (err) {
+          return console.error("Error setting avatarColor", err);
+        }
+        // The user now appears red in the user-list, etc.
       });
 
       var ScrollIndicator = goinstant.widgets.ScrollIndicator;
       var scrollIndicator = new ScrollIndicator({ room: currentRoom });
       scrollIndicator.initialize(function(err) {
         if (err) {
-          console.log("Error initializing scroll-indicator:", err);
-          return;
+          return console.error("Error initializing scroll-indicator:", err);
         }
       });
     });
